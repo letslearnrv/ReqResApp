@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch User</title>
+   <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #007bff;
+            font-weight: bold;
+            letter-spacing: 1px;
+            z-index: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+        input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .user-details {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        img {
+            max-width: 150px;
+            border-radius: 50%;
+            margin-top: 10px;
+        }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <span class="logo">LET'S LEARN</span>
+    <div class="container">
+        <h1>Fetch User</h1>
+        <form id="user-form" class="form-group">
+            <label for="user-id">Enter User ID:</label>
+            <input type="number" id="user-id" name="user-id" required>
+            <button type="submit" class="btn">Fetch User</button>
+        </form>
+        <div id="user-details" class="user-details"></div>
+        <p id="error-message" class="error-message"></p>
+    </div>
+   <script>
+    const userForm = document.getElementById('user-form');
+    const userDetails = document.getElementById('user-details');
+    const errorMessage = document.getElementById('error-message');
+
+    userForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const userId = document.getElementById('user-id').value;
+        // Validation
+        if (!validateUserId(userId)) {
+            errorMessage.textContent = 'Invalid User ID. Please enter a positive integer.';
+            userDetails.innerHTML = '';
+            return;
+        }
+        const response = await fetch(`/user/${userId}`);
+        if (!response.ok) {
+            errorMessage.textContent = 'User not found';
+            userDetails.innerHTML = '';
+            return;
+        }
+        const data = await response.json();
+        if (data.id < 0) {
+            errorMessage.textContent = 'Error: User ID cannot be negative.';
+            userDetails.innerHTML = '';
+            return;
+        }
+        if (data.id != userId) {
+            errorMessage.textContent = 'Error: User ID returned in the response does not match the provided User ID.';
+            userDetails.innerHTML = '';
+            return;
+        }
+        // Email format validation
+        const email = data.email;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            errorMessage.textContent = 'Invalid email format.';
+            userDetails.innerHTML = '';
+            return;
+        }
+        userDetails.innerHTML = `
+            <h2>User Details</h2>
+            <p><strong>ID:</strong> ${data.id}</p>
+            <p><strong>Name:</strong> ${data.first_name} ${data.last_name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+        `;
+        errorMessage.textContent = '';
+    });
+
+    function validateUserId(userId) {
+        return userId > 0; // Check for positive values
+    }
+
+    function validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+</script>
+
+</body>
+</html>
